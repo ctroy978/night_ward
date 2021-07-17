@@ -6,6 +6,13 @@ const BG_NIGHT: &str = "Background/Layer_0010_1.png";
 const BG_02: &str = "Background/Layer_0009_2.png";
 const BG_03: &str = "Background/Layer_0008_3.png";
 const BG_04: &str = "Background/Layer_0006_4.png";
+const BG_05: &str = "Background/Layer_0005_5.png";
+const BG_06: &str = "Background/Layer_0003_6.png";
+const BG_07: &str = "Background/Layer_0002_7.png";
+const BG_08: &str = "Background/Layer_0001_8.png";
+const BG_09: &str = "Background/Layer_0000_9.png";
+const BG_10: &str = "Background/Layer_0007_Lights.png";
+
 
 
 //resources
@@ -14,6 +21,12 @@ pub struct Materials{
     bg_02: Handle<ColorMaterial>,
     bg_03: Handle<ColorMaterial>,
     bg_04: Handle<ColorMaterial>,
+    bg_05: Handle<ColorMaterial>,
+    bg_06: Handle<ColorMaterial>,
+    bg_07: Handle<ColorMaterial>,
+    bg_08: Handle<ColorMaterial>,
+    bg_09: Handle<ColorMaterial>,
+    bg_10: Handle<ColorMaterial>,
 }
 struct WinSize{
     h: f32,
@@ -78,6 +91,12 @@ fn setup(
         bg_02: materials.add(asset_server.load(BG_02).into()),
         bg_03: materials.add(asset_server.load(BG_03).into()),
         bg_04: materials.add(asset_server.load(BG_04).into()),
+        bg_05: materials.add(asset_server.load(BG_05).into()),
+        bg_06: materials.add(asset_server.load(BG_06).into()),
+        bg_07: materials.add(asset_server.load(BG_07).into()),
+        bg_08: materials.add(asset_server.load(BG_08).into()),
+        bg_09: materials.add(asset_server.load(BG_09).into()),
+        bg_10: materials.add(asset_server.load(BG_10).into()),
     });
 
     commands.insert_resource(WinSize{
@@ -89,6 +108,7 @@ fn setup(
         direction: Direction::Left,
     });
 }
+
 
 fn background_spawn(
     mut commands: Commands,
@@ -102,6 +122,7 @@ fn background_spawn(
     let bg_width = 928.0;
     let left_x = 0.0;
     let right_x = bg_width;
+
 
     commands
         //first layer
@@ -144,7 +165,7 @@ fn background_spawn(
         .spawn_bundle(SpriteBundle{
             material: materials.bg_03.clone(),
             transform: Transform{
-                translation: Vec3::new(left_x, 0.0, 1.0),
+                translation: Vec3::new(left_x, 0.0, 0.7),
                 ..Default::default()
             },
             ..Default::default()
@@ -157,7 +178,33 @@ fn background_spawn(
         .spawn_bundle(SpriteBundle{
             material: materials.bg_03.clone(),
             transform: Transform{
-                translation: Vec3::new(right_x, 0.0, 1.0),
+                translation: Vec3::new(right_x, 0.0, 0.7),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+            });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_10.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 0.8),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+            });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_10.clone(),
+            transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 0.8),
                 ..Default::default()
             },
             ..Default::default()
@@ -170,7 +217,7 @@ fn background_spawn(
         .spawn_bundle(SpriteBundle{
             material: materials.bg_04.clone(),
             transform: Transform{
-                translation: Vec3::new(left_x, 0.0, 1.5),
+                translation: Vec3::new(left_x, 0.0, 1.0),
                 ..Default::default()
             },
             ..Default::default()
@@ -183,7 +230,138 @@ fn background_spawn(
         .spawn_bundle(SpriteBundle{
             material: materials.bg_04.clone(),
             transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 1.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_05.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 1.3),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_05.clone(),
+            transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 1.3),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_06.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 1.5),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_06.clone(),
+            transform: Transform{
                 translation: Vec3::new(right_x, 0.0, 1.5),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+        //bg_07 must match bg_06 in z for speed
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_07.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 1.5),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_07.clone(),
+            transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 1.5),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_08.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 1.6),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_08.clone(),
+            transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 1.6),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_09.clone(),
+            transform: Transform{
+                translation: Vec3::new(left_x, 0.0, 1.9),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Background)
+            .insert(Velocity{
+                velocity: Vec3::new(1.0, 0.0, 0.0),
+        });
+    commands
+        .spawn_bundle(SpriteBundle{
+            material: materials.bg_09.clone(),
+            transform: Transform{
+                translation: Vec3::new(right_x, 0.0, 1.9),
                 ..Default::default()
             },
             ..Default::default()
