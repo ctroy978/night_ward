@@ -61,6 +61,7 @@ struct PlayerDirection{
 }
 
 enum PlayerAction{
+    Charge,
     Chop,
     Jump,
     Stand,

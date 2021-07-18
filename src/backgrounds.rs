@@ -302,6 +302,8 @@ fn scroll_backgrounds(
             Direction::NotMoving => 0.0,
             _ => 100.0,
         };
+        //multiplyer is the z value of the background. The further back
+        //into the background, the slower the multiplier.
         let multiplier = transform.translation.z;
         transform.translation += 
             (vel * multiplier) * velocity.velocity * time.delta_seconds();
