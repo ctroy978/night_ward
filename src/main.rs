@@ -22,7 +22,10 @@ const BG_10: &str = "Background/Layer_0007_Lights.png";
 const SCALE_UP: f32 = 3.5;
 const PLAYER_SPRITE: &str = "anim/player1.png";
 
-
+//game values
+const SPEEDFAST: f32 = 300.0;
+const SPEEDSLOW: f32 = 100.0;
+const SPEEDSTOP: f32 = 0.0;
 
 //resources
 pub struct Materials{
@@ -46,6 +49,8 @@ pub struct WinSize{
 
 struct Player{
     action: PlayerAction,
+    direction: Direction, 
+    vel_mod: f32, //RUN, WALK, STOP, etc
 }
 
 
@@ -56,9 +61,9 @@ struct Velocity{
     velocity: Vec3,
 }
 
-struct PlayerDirection{
-    direction: Direction,
-}
+//struct PlayerDirection{
+//    direction: Direction,
+//}
 
 enum PlayerAction{
     Charge,
@@ -68,6 +73,7 @@ enum PlayerAction{
     Swipe,
     Walk,
 }
+
 
 #[derive(PartialEq, Eq)]
 enum Direction{
@@ -133,7 +139,7 @@ fn setup(
         w: window.width(),
     });
 
-    commands.insert_resource(PlayerDirection{
-        direction: Direction::Left,
-    });
+    //commands.insert_resource(PlayerDirection{
+    //    direction: Direction::Left,
+    //});
 }

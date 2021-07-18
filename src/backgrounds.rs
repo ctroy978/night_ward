@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{WinSize, Materials, Background, Velocity, PlayerDirection, Direction};
+use crate::{WinSize, Materials, Background, Velocity, Player, Direction};
 
 
 pub struct BackgroundsPlugin;
@@ -290,36 +290,43 @@ fn get_size(
 
 fn scroll_backgrounds(
     time: Res<Time>,
-    player_direction: Res<PlayerDirection>,
     mut query: Query<(&mut Transform, &Velocity),With<Background>>,
+    mut player_query: Query<(&Player)>,
     ){
-    for (mut transform, velocity) in query.iter_mut(){
-        //layers will be divided by value in transform.z.  
-        //the further back z (lower) the slower the velocity. 
-        let vel  = match player_direction.direction{
-            Direction::Right => -100.0,
-            Direction::Left => 100.0,
-            Direction::NotMoving => 0.0,
-            _ => 100.0,
-        };
-        //multiplyer is the z value of the background. The further back
-        //into the background, the slower the multiplier.
-        let multiplier = transform.translation.z;
-        transform.translation += 
-            (vel * multiplier) * velocity.velocity * time.delta_seconds();
+    if let Ok((player)) = player_query.single_mut(){
+        for (mut transform, velocity) in query.iter_mut(){
+            //layers will be divided by value in transform.z.  
+            //the further back z (lower) the slower the velocity. 
+            let dir = match player.direction{
+                Direction::Right => -1.0,
+                Direction::Left => 1.0,
+                //Direction::NotMoving => 0.0,
+                _ => 0.0,
+            };
+            let vel = dir * player.vel_mod;
+            //multiplyer is the z value of the background. The further back
+            //into the background, the slower the multiplier.
+            let multiplier = transform.translation.z;
+            transform.translation += 
+                (vel * multiplier) * velocity.velocity * time.delta_seconds();
+        }
     }
 }
 
 fn flip_backgrounds(
-    player_direction: Res<PlayerDirection>,
+    //flips a background panel to opposite side to create 
+    //illusion that the background goes on forever.
+    mut player_query: Query<(&Player)>,
     mut query: Query<(&Sprite, &mut Transform), With<Background>>,
     ){
-    for(mut sprite, mut transform) in query.iter_mut(){
-        if player_direction.direction == Direction::Right && transform.translation.x < -sprite.size.x{
-            transform.translation.x = transform.translation.x + (sprite.size.x * 2.0);
-        }
-        if player_direction.direction == Direction::Left && transform.translation.x > sprite.size.x{
-            transform.translation.x = transform.translation.x - (sprite.size.x * 2.0);
+    if let Ok((player)) = player_query.single_mut(){
+        for(mut sprite, mut transform) in query.iter_mut(){
+            if player.direction == Direction::Right && transform.translation.x < -sprite.size.x{
+                transform.translation.x = transform.translation.x + (sprite.size.x * 2.0);
+            }
+            if player.direction == Direction::Left && transform.translation.x > sprite.size.x{
+                transform.translation.x = transform.translation.x - (sprite.size.x * 2.0);
+            }
         }
     }
 }
