@@ -1,10 +1,13 @@
 use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
 
 
 mod backgrounds;
-mod player;
+mod players;
+mod platforms;
 use backgrounds::BackgroundsPlugin;
-use player::PlayerPlugin;
+use players::PlayersPlugin;
+use platforms::PlatformsPlugin;
 
 
 const BG_NIGHT: &str = "Background/Layer_0010_1.png";
@@ -47,23 +50,31 @@ pub struct WinSize{
     w: f32,
 }
 
+
 struct Player{
     action: PlayerAction,
     direction: Direction, 
     vel_mod: f32, //RUN, WALK, STOP, etc
 }
 
+struct StrikeBox{
+    h: f32,
+    w: f32,
+    attack_h: f32,
+    attack_w: f32,
+}
 
-//components
 struct Background;
+struct Platform;
+
 
 struct Velocity{
     velocity: Vec3,
 }
 
-//struct PlayerDirection{
-//    direction: Direction,
-//}
+struct Gravity{
+    falling: bool,
+}
 
 enum PlayerAction{
     Charge,
@@ -96,7 +107,8 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(BackgroundsPlugin)
-        .add_plugin(PlayerPlugin)
+        .add_plugin(PlayersPlugin)
+        .add_plugin(PlatformsPlugin)
         .add_startup_system(setup.system())
         .run();
 }
@@ -138,8 +150,10 @@ fn setup(
         h: window.height(),
         w: window.width(),
     });
-
-    //commands.insert_resource(PlayerDirection{
-    //    direction: Direction::Left,
-    //});
 }
+
+
+
+
+
+

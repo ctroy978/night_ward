@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use crate::{SCALE_UP, Materials,  Direction, 
-    Player, PlayerAction, SPEEDSTOP, SPEEDFAST, SPEEDSLOW};
+use crate::{SCALE_UP, Materials,  Direction, Platform, Velocity, Gravity, 
+    Player, StrikeBox, PlayerAction, SPEEDSTOP, SPEEDFAST, SPEEDSLOW};
 
 
-pub struct PlayerPlugin;
-impl Plugin for PlayerPlugin{
+pub struct PlayersPlugin;
+impl Plugin for PlayersPlugin{
     fn build(&self, app: &mut AppBuilder){
         app
             .add_startup_stage(
@@ -13,10 +13,10 @@ impl Plugin for PlayerPlugin{
                 SystemStage::single(player_spawn.system(),)
                   )
             .add_system(move_player.system())
+            .add_system(gravity_player.system())
             .add_system(animate_player.system());
     }
 }
-
 fn player_spawn(
     mut commands: Commands,
     materials: Res<Materials>,
@@ -25,18 +25,30 @@ fn player_spawn(
         .spawn_bundle(SpriteSheetBundle{
             texture_atlas: materials.player_sprite.clone(),
             transform: Transform{
-                translation: Vec3::new(0.0, 0.0, 10.0),
+                translation: Vec3::new(0.0, 0.0, 1.8),
                 scale: Vec3::new(SCALE_UP, SCALE_UP, 0.0),
                 ..Default::default()
             },
             ..Default::default()
         })
-    .insert(Player{
-        action: PlayerAction::Stand,
-        direction: Direction::Right,
-        vel_mod: SPEEDSTOP,
-    })
-        .insert(Timer::from_seconds(0.1, true));
+        .insert(Player{
+            action: PlayerAction::Stand,
+            direction: Direction::Right,
+            vel_mod: SPEEDSTOP,
+        })
+        .insert(Timer::from_seconds(0.1, true))
+        .insert(Velocity{
+            velocity: Vec3::new(0.0, 0.0, 0.0),
+        })
+        .insert(Gravity{
+            falling: true,
+        })
+        .insert(StrikeBox{
+            h: 9.6 * SCALE_UP,  
+            w: 7.1 * SCALE_UP,
+            attack_h: 20.0,
+            attack_w: (7.1 * SCALE_UP) + 10.0,
+        });
 }
 
 fn animate_player(
@@ -89,6 +101,20 @@ fn animate_player(
     }
 }
 
+fn gravity_player(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Velocity, &Gravity), With<Player>>,
+    ){
+    if let Ok((mut transform, mut player_velocity, gravity)) = query.single_mut(){
+        if gravity.falling{
+            let delta_seconds = f32::min(0.3, time.delta_seconds());
+            let g = 500.0 * Vec3::new(0.0, -2.0, 0.0).normalize();
+            transform.translation += player_velocity.velocity * delta_seconds;
+            player_velocity.velocity = player_velocity.velocity + (g * delta_seconds);
+        }
+    }
+}
+
 fn move_player(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Player)>,
@@ -125,4 +151,5 @@ fn move_player(
         }
     }
 }
+
 
