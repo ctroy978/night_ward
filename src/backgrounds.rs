@@ -290,20 +290,20 @@ fn get_size(
 
 fn scroll_backgrounds(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Velocity),With<Background>>,
+    mut bg_query: Query<(&mut Transform, &Velocity),With<Background>>,
     mut player_query: Query<(&Player)>,
     ){
     if let Ok((player)) = player_query.single_mut(){
-        for (mut transform, velocity) in query.iter_mut(){
-            //layers will be divided by value in transform.z.  
-            //the further back z (lower) the slower the velocity. 
-            let dir = match player.direction{
-                Direction::Right => -1.0,
-                Direction::Left => 1.0,
-                //Direction::NotMoving => 0.0,
-                _ => 0.0,
-            };
-            let vel = dir * player.vel_mod;
+        //layers will be divided by value in transform.z.  
+        //the further back z (lower) the slower the velocity. 
+        let dir = match player.direction{
+            Direction::Right => -1.0,
+            Direction::Left => 1.0,
+            //Direction::NotMoving => 0.0,
+            _ => 0.0,
+        };
+        let vel = dir * player.vel_mod;
+        for (mut transform, velocity) in bg_query.iter_mut(){
             //multiplyer is the z value of the background. The further back
             //into the background, the slower the multiplier.
             let multiplier = transform.translation.z;

@@ -27,6 +27,7 @@ const PLAYER_SPRITE: &str = "anim/player1.png";
 
 //game values
 const SPEEDFAST: f32 = 300.0;
+const SPEEDMED: f32 = 200.0;
 const SPEEDSLOW: f32 = 100.0;
 const SPEEDSTOP: f32 = 0.0;
 
@@ -44,6 +45,7 @@ pub struct Materials{
     bg_10: Handle<ColorMaterial>,
     //game assets
     player_sprite: Handle<TextureAtlas>,
+    pl_01: Handle<ColorMaterial>,
 }
 pub struct WinSize{
     h: f32,
@@ -76,6 +78,7 @@ struct Gravity{
     falling: bool,
 }
 
+#[derive(PartialEq, Eq)]
 enum PlayerAction{
     Charge,
     Chop,
@@ -83,6 +86,9 @@ enum PlayerAction{
     Stand,
     Swipe,
     Walk,
+    Pushed,
+    Bumped,
+    Fly,
 }
 
 
@@ -143,6 +149,7 @@ fn setup(
         bg_09: materials.add(asset_server.load(BG_09).into()),
         bg_10: materials.add(asset_server.load(BG_10).into()),
         player_sprite: texture_atlases.add(texture_atlas_player),
+        pl_01: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
     });
 
 
@@ -151,8 +158,6 @@ fn setup(
         w: window.width(),
     });
 }
-
-
 
 
 
