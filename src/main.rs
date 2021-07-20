@@ -5,9 +5,11 @@ use bevy::sprite::collide_aabb::collide;
 mod backgrounds;
 mod players;
 mod platforms;
+mod enemies;
 use backgrounds::BackgroundsPlugin;
 use players::PlayersPlugin;
 use platforms::PlatformsPlugin;
+use enemies::EnemiesPlugin; 
 
 
 const BG_NIGHT: &str = "Background/Layer_0010_1.png";
@@ -24,6 +26,7 @@ const BG_10: &str = "Background/Layer_0007_Lights.png";
 //game assets
 const SCALE_UP: f32 = 3.5;
 const PLAYER_SPRITE: &str = "anim/player1.png";
+const SKELY_ONE_SPRITE: &str = "anim/Skeleton1_64x48.png";
 
 //game values
 const SPEEDFAST: f32 = 300.0;
@@ -45,6 +48,8 @@ pub struct Materials{
     bg_10: Handle<ColorMaterial>,
     //game assets
     player_sprite: Handle<TextureAtlas>,
+    skely_one_sprite: Handle<TextureAtlas>,
+    //platform
     pl_01: Handle<ColorMaterial>,
 }
 pub struct WinSize{
@@ -57,6 +62,12 @@ struct Player{
     action: PlayerAction,
     direction: Direction, 
     vel_mod: f32, //RUN, WALK, STOP, etc
+    current_x: f32,
+}
+
+struct Enemy{
+    action: PlayerAction,
+    direction: Direction,
 }
 
 struct StrikeBox{
@@ -76,6 +87,10 @@ struct Velocity{
 
 struct Gravity{
     falling: bool,
+}
+
+struct Proximity{
+    near_player: bool,
 }
 
 #[derive(PartialEq, Eq)]
@@ -115,7 +130,9 @@ fn main() {
         .add_plugin(BackgroundsPlugin)
         .add_plugin(PlayersPlugin)
         .add_plugin(PlatformsPlugin)
+        .add_plugin(EnemiesPlugin)
         .add_startup_system(setup.system())
+        .add_system(gravity_all.system())
         .run();
 }
 
@@ -136,6 +153,12 @@ fn setup(
         TextureAtlas::from_grid(
             texture_handle_player, Vec2::new(64.0, 48.0), 9,4 
                                );
+    //skeleton atlas
+    let texture_handle_skelyone = asset_server.load(SKELY_ONE_SPRITE);
+    let texture_atlas_skelyone = 
+        TextureAtlas::from_grid(
+            texture_handle_skelyone, Vec2::new(64.0, 48.0), 9, 4
+                               );
     //build resources
     commands.insert_resource(Materials{
         background: materials.add(asset_server.load(BG_NIGHT).into()),
@@ -149,6 +172,7 @@ fn setup(
         bg_09: materials.add(asset_server.load(BG_09).into()),
         bg_10: materials.add(asset_server.load(BG_10).into()),
         player_sprite: texture_atlases.add(texture_atlas_player),
+        skely_one_sprite: texture_atlases.add(texture_atlas_skelyone),
         pl_01: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
     });
 
@@ -159,6 +183,20 @@ fn setup(
     });
 }
 
+
+fn gravity_all(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Velocity, &Gravity)>,
+    ){
+    for(mut transform, mut entity_velocity, gravity) in query.iter_mut(){
+        if gravity.falling{
+            let delta_seconds = f32::min(0.3, time.delta_seconds());
+            let g = 800.0 * Vec3::new(0.0, -2.0, 0.0).normalize();
+            transform.translation += entity_velocity.velocity * delta_seconds;
+            entity_velocity.velocity = entity_velocity.velocity + (g * delta_seconds);
+        }
+    }
+}
 
 
 

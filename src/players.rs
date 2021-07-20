@@ -13,7 +13,6 @@ impl Plugin for PlayersPlugin{
                 SystemStage::single(player_spawn.system(),)
                   )
             .add_system(input_player.system())
-            .add_system(gravity_player.system())
             .add_system(animate_player.system())
             .add_system(control_player.system());
     }
@@ -36,6 +35,7 @@ fn player_spawn(
             action: PlayerAction::Stand,
             direction: Direction::Right,
             vel_mod: SPEEDSTOP,
+            current_x: 0.0,
         })
         .insert(Timer::from_seconds(0.1, true))
         .insert(Velocity{
@@ -45,13 +45,24 @@ fn player_spawn(
             falling: true,
         })
         .insert(StrikeBox{
-            //TODO: figure out the real size -- see platofrm touch!!!!!!!!!
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111
-            h: 9.6 * SCALE_UP,  
-            w: 7.1 * SCALE_UP,
-            attack_h: 9.6 * SCALE_UP,
-            attack_w: (7.1 * SCALE_UP) + 10.0,
+            h: 40.0,
+            w: 115.0,
+            attack_h: 40.0,
+            attack_w: 130.0,
         });
+}
+
+fn update_current_x(
+    mut commands: Commands,
+    mut query: Query<(&mut Player, &Transform)>,
+    ){
+
+    //constantly update this so that enemy can target
+    //location for pathfinding.
+
+    if let Ok((mut player, transform)) = query.single_mut(){
+        player.current_x = transform.translation.x;
+    }
 }
 
 
@@ -177,19 +188,6 @@ fn control_player(
     }
 }
 
-fn gravity_player(
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Velocity, &Gravity), With<Player>>,
-    ){
-    if let Ok((mut transform, mut player_velocity, gravity)) = query.single_mut(){
-        if gravity.falling{
-            let delta_seconds = f32::min(0.3, time.delta_seconds());
-            let g = 800.0 * Vec3::new(0.0, -2.0, 0.0).normalize();
-            transform.translation += player_velocity.velocity * delta_seconds;
-            player_velocity.velocity = player_velocity.velocity + (g * delta_seconds);
-        }
-    }
-}
 
 fn input_player(
     keyboard_input: Res<Input<KeyCode>>,
