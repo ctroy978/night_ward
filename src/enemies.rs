@@ -1,10 +1,11 @@
 
 use bevy::prelude::*;
 
-use crate::{SCALE_UP, Materials,  Direction, Platform, Velocity, Gravity, 
-    Player, StrikeBox, PlayerAction, SPEEDSTOP, SPEEDFAST, SPEEDMED, SPEEDSLOW,
-    Enemy, Proximity, WinSize};
+use crate::{SCALE_UP, Materials,  Direction,  Velocity, Gravity, 
+    Player, StrikeBox, PlayerAction, 
+    Enemy, Proximity, Attacking, WinSize};
 
+const SKEL_SPEED: f32 = 50.0;
 
 pub struct EnemiesPlugin;
 impl Plugin for EnemiesPlugin{
@@ -16,7 +17,8 @@ impl Plugin for EnemiesPlugin{
                 )
             .add_system(scroll_enemy.system())
             .add_system(animate_enemy.system())
-            .add_system(near_player.system());
+            .add_system(near_player.system())
+            .add_system(control_enemy.system());
     }
 }
 
@@ -68,10 +70,10 @@ fn near_player(
     ){
         let mut enemy_x: f32 = 0.0;
         let mut player_x: f32 = 0.0;
-        for mut transform in q.q0_mut().iter_mut(){
+        for transform in q.q0_mut().iter_mut(){
             enemy_x = transform.translation.x; 
         }
-        for mut transform in q.q1_mut().iter_mut(){
+        for transform in q.q1_mut().iter_mut(){
             player_x = transform.translation.x + (window.w / 2.0);
         }
         for mut proximity in q.q2_mut().iter_mut(){
@@ -92,7 +94,7 @@ fn animate_enemy(
              )>,
              ){
 
-    for(mut timer, mut sprite, texture_atlas_handle, mut enemy, mut transform) in query.iter_mut(){
+    for(mut timer, mut sprite, texture_atlas_handle, enemy, transform) in query.iter_mut(){
         timer.tick(time.delta());
         if timer.finished(){
             let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
@@ -115,29 +117,31 @@ fn animate_enemy(
 
 fn scroll_enemy(
     time: Res<Time>,
-    mut bg_query: Query<(&mut Enemy, &mut Transform, &Velocity, &Proximity)>,
-    mut player_query: Query<(&Player)>,
+    mut enemy_query: Query<(&mut Enemy, &mut Transform, &Velocity, &Proximity)>,
+    mut player_query: Query<(&Player, &StrikeBox)>,
+        
     ){
-    if let Ok((player)) = player_query.single_mut(){
-        //layers will be divided by value in transform.z.  
-        //the further back z (lower) the slower the velocity. 
+    if let Ok((player, strike_box)) = player_query.single_mut(){
+        //what direction is player facing? If player moves, the whole 
+        //game moves with him.  So enemy must scroll with him.
         let dir = match player.direction{
             Direction::Right => -1.0,
             Direction::Left => 1.0,
             _ => 0.0,
         };
         let mut vel = dir * player.vel_mod;
-        for (mut enemy, mut transform, enemy_velocity, proximity) in bg_query.iter_mut(){
+        for (mut enemy, mut transform, enemy_velocity, proximity) in enemy_query.iter_mut(){
 
-            //once enemy is on screen, the enemy closes in on player
+            //once enemy is on screen, the enemy closes in on player and scrolling
+            //stops. 
             if proximity.near_player{
-                if transform.translation.x > player.current_x{
-                    vel += -1.0 * 50.0;
+                if transform.translation.x > player.current_x + (strike_box.w / 2.0){
+                    vel += -1.0 * SKEL_SPEED;
                     //flip sprite 
                     transform.rotation = Quat::from_rotation_y(std::f32::consts::PI);
                     //animate walking
                     enemy.action = PlayerAction::Walk;
-                }else{
+                }else if transform.translation.x < player.current_x - (strike_box.w / 2.0){
                     vel += 1.0 * 50.0;
                     //flip sprite
                     transform.rotation = Quat::default();
@@ -154,6 +158,41 @@ fn scroll_enemy(
             transform.translation.x  += 
                 (vel * multiplier) * enemy_velocity.velocity.x * time.delta_seconds();
 
+        }
+    }
+}
+
+fn control_enemy(
+    time: Res<Time>,
+    mut enemy_query: Query<(&mut Enemy, &mut Transform, 
+                      &mut Velocity, &mut Gravity)>,
+    mut player_query: Query<(&Player, &mut Attacking)>,
+    
+    ){
+    for(mut enemy, mut transform, mut enemy_velocity, 
+       mut enemy_gravity) in enemy_query.iter_mut(){
+
+        
+
+        let delta_seconds = f32::min(0.3, time.delta_seconds());
+
+        match enemy.action{
+            PlayerAction::Bumped => {
+                if let Ok((player, mut attacking)) = player_query.single_mut(){
+                    attacking.attack = false; //turn off attack
+                    transform.translation.y += 30.0;//get enemy off player 
+                    enemy_velocity.velocity.y = 30.0;
+                    enemy_gravity.falling = true;
+                    if player.direction == Direction::Left{
+                        transform.translation.x -= 40.0; //get it off platform
+                    }else{
+                        transform.translation.x += 40.0; //get it off platform
+                    }
+                }
+            }
+            _ =>{
+                //nothing
+            }
         }
     }
 }

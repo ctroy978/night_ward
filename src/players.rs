@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{SCALE_UP, Materials,  Direction, Platform, Velocity, Gravity, 
-    Player, StrikeBox, PlayerAction, SPEEDSTOP, SPEEDFAST, SPEEDMED, SPEEDSLOW};
+    Player, StrikeBox, PlayerAction, SPEEDSTOP, SPEEDFAST, 
+    Attacking, SPEEDMED, SPEEDSLOW};
 
 
 pub struct PlayersPlugin;
@@ -14,7 +15,8 @@ impl Plugin for PlayersPlugin{
                   )
             .add_system(input_player.system())
             .add_system(animate_player.system())
-            .add_system(control_player.system());
+            .add_system(control_player.system())
+            .add_system(attacking_player.system());
     }
 }
 fn player_spawn(
@@ -49,7 +51,11 @@ fn player_spawn(
             w: 115.0,
             attack_h: 40.0,
             attack_w: 130.0,
+        })
+        .insert(Attacking{
+            attack: false,
         });
+
 }
 
 fn update_current_x(
@@ -57,7 +63,7 @@ fn update_current_x(
     mut query: Query<(&mut Player, &Transform)>,
     ){
 
-    //constantly update this so that enemy can target
+    //constantly updating this so that enemy can target
     //location for pathfinding.
 
     if let Ok((mut player, transform)) = query.single_mut(){
@@ -97,6 +103,7 @@ fn animate_player(
                         _ => sprite.index = 18,
                     }
                 }
+                
                 PlayerAction::Charge =>{
                     match sprite.index{
                         14 => sprite.index = 15,
@@ -109,6 +116,20 @@ fn animate_player(
                         player.action = PlayerAction::Stand;
                     }
                 }
+
+                PlayerAction::Chop =>{
+                    match sprite.index{
+                        27 => sprite.index = 28,
+                        28 => sprite.index = 29,
+                        29 => sprite.index = 30, 
+                        _ => sprite.index = 27,
+                    } 
+                    if sprite.index == 30{
+                        player.vel_mod = SPEEDSTOP;
+                        player.action = PlayerAction::Stand;
+                    }
+                }
+
                 PlayerAction::Fly => {
                     match sprite.index{
                         23 => sprite.index = 24,
@@ -166,6 +187,14 @@ fn control_player(
                     //player.action = PlayerAction::Stand;
                     }
             }
+            PlayerAction::Chop =>{
+                    if player_gravity.falling == false{
+                    transform.translation.y += 10.0; //get it off plaform
+                    player_velocity.velocity.y = 222.0; //initial up velocity 
+                    player_gravity.falling = true;
+                    //player.action = PlayerAction::Stand;
+                    }
+            }
             PlayerAction::Bumped => {
                 transform.translation.y += 10.0;//get him off platform
                 player_velocity.velocity.y = 30.0;
@@ -184,6 +213,18 @@ fn control_player(
             _ =>{
                 //nothing
             }
+        }
+    }
+}
+
+fn attacking_player(
+    mut query: Query<(&mut Attacking, &Player)>,
+    ){
+    for(mut attacking, mut player) in query.iter_mut(){
+        match player.action{
+            PlayerAction::Charge => attacking.attack = true,
+            PlayerAction::Chop => attacking.attack = true,
+            _ => attacking.attack = false,
         }
     }
 }
@@ -222,6 +263,11 @@ fn input_player(
         if keyboard_input.just_pressed(KeyCode::R){
             player.vel_mod = SPEEDFAST;
             player.action = PlayerAction::Charge;
+        }
+
+        if keyboard_input.just_pressed(KeyCode::E){
+            player.vel_mod = SPEEDSLOW;
+            player.action = PlayerAction::Chop;
         }
 
         if keyboard_input.just_pressed(KeyCode::Space){

@@ -93,6 +93,10 @@ struct Proximity{
     near_player: bool,
 }
 
+struct Attacking{
+    attack: bool,
+}
+
 #[derive(PartialEq, Eq)]
 enum PlayerAction{
     Charge,
@@ -133,6 +137,7 @@ fn main() {
         .add_plugin(EnemiesPlugin)
         .add_startup_system(setup.system())
         .add_system(gravity_all.system())
+        .add_system(player_enemy_collision.system())
         .run();
 }
 
@@ -198,5 +203,38 @@ fn gravity_all(
     }
 }
 
+
+fn player_enemy_collision(
+    mut commands: Commands,
+    mut player_query: Query<(
+        &mut Player, &Transform, &StrikeBox, &Attacking)>,
+    mut enemy_query: Query<(
+        &mut Enemy, &Transform,  &StrikeBox)>,
+    ){
+
+    let mut on_something = false;
+
+    for(mut player, player_tf, strike_box, player_attacking) in player_query.iter_mut(){
+        for(mut enemy, enemy_tf, strike_box) in enemy_query.iter_mut(){
+
+            let player_size= Vec2::new(strike_box.h, strike_box.w);
+            let enemy_size = Vec2::new(strike_box.h, strike_box.w);
+
+            let collision = collide(
+                enemy_tf.translation,
+                enemy_size,
+                player_tf.translation,
+                player_size,
+               );
+            
+
+            if let Some(_) = collision{
+                if player_attacking.attack{
+                    enemy.action = PlayerAction::Bumped;
+                }
+            }
+        }
+    }
+}
 
 
