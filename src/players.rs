@@ -130,6 +130,16 @@ fn animate_player(
                     }
                 }
 
+                PlayerAction::Block =>{
+                    match sprite.index{
+                        23 => sprite.index = 24,
+                        24 => sprite.index = 25,
+                        25 => sprite.index = 26,
+                        26 => sprite.index = 25, //hold until released.
+                        _ => sprite.index = 23,
+                    }
+                }
+
                 PlayerAction::Fly => {
                     match sprite.index{
                         23 => sprite.index = 24,
@@ -268,6 +278,16 @@ fn input_player(
         if keyboard_input.just_pressed(KeyCode::E){
             player.vel_mod = SPEEDSLOW;
             player.action = PlayerAction::Chop;
+        }
+        
+        if keyboard_input.pressed(KeyCode::W){
+            player.vel_mod = SPEEDSTOP;
+            player.action = PlayerAction::Block;
+        }
+
+        if keyboard_input.just_released(KeyCode::W){
+            player.vel_mod = SPEEDSTOP;
+            player.action = PlayerAction::Stand;
         }
 
         if keyboard_input.just_pressed(KeyCode::Space){

@@ -33,6 +33,11 @@ const SPEEDFAST: f32 = 300.0;
 const SPEEDMED: f32 = 200.0;
 const SPEEDSLOW: f32 = 100.0;
 const SPEEDSTOP: f32 = 0.0;
+//game values for enemies
+const ENEMYSPEEDFAST: f32 = 200.0;
+const ENEMYSPEEDMED: f32 = 75.0; 
+const ENEMYSPEEDSLOW: f32 = 50.0;
+const ENEMYSPEEDSTOP: f32 = 0.0;  //here for consistancy.  
 
 //resources
 pub struct Materials{
@@ -61,13 +66,14 @@ pub struct WinSize{
 struct Player{
     action: PlayerAction,
     direction: Direction, 
-    vel_mod: f32, //RUN, WALK, STOP, etc
+    vel_mod: f32, //SPEEDFAST, SPEEDSTOP, etc.
     current_x: f32,
 }
 
 struct Enemy{
     action: PlayerAction,
     direction: Direction,
+    vel_mod: f32, //SPEEDFAST, SPEEDSTOP, etc.
 }
 
 struct StrikeBox{
@@ -97,13 +103,17 @@ struct Attacking{
     attack: bool,
 }
 
+struct Energy{
+    power: i32,
+}
+
 #[derive(PartialEq, Eq)]
 enum PlayerAction{
+    Block,
     Charge,
     Chop,
     Jump,
     Stand,
-    Swipe,
     Walk,
     Pushed,
     Bumped,
